@@ -1,8 +1,11 @@
-FROM ubuntu:20.04
-
+# Just a representation of a base image. Let it be Ubuntu.
+FROM ubuntu:20.04 as base
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV PATH="/root/.local/bin:${PATH}"
 ENV PATH="/root/.ghcup/bin:${PATH}"
+
+# Image with tools, such as GHC. We don't want them to be in the resulting container.
+FROM base as tools
 
 RUN apt-get update                                                              && \
     apt-get -y install build-essential pkg-config libffi-dev libgmp-dev curl    && \
@@ -11,21 +14,39 @@ RUN apt-get update                                                              
     rm -rf /var/lib/apt/lists/*                                                 && \
     echo Done
 
-ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
-ENV PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH}"
-
 RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | \
     BOOTSTRAP_HASKELL_NONINTERACTIVE=yes sh
 
 RUN ghcup install ghc 8.10.3
-
 RUN ghcup install cabal 3.4.0.0-rc4
+
+# Build libsodium here, we don't want sources and build artefacts in 
+# the result container
+FROM tools as libsodium
 
 RUN git clone https://github.com/input-output-hk/libsodium                      && \
     cd libsodium                                                                && \
     git checkout 66f017f1                                                       && \
     ./autogen.sh                                                                && \
-    ./configure                                                                 && \
+    ./configure --prefix=/opt/dist/libsodium                                    && \
     make                                                                        && \
-    make install                                                           && \
+    make install                                                                && \
     echo Done
+
+# Build cardano-node and cardano-cli here.
+FROM tools as node
+
+RUN mkdir -p /opt/dist/cardano
+COPY --from=libsodium /opt/dist/libsodium /usr/
+
+RUN git clone --depth 1 --branch 1.24.2 https://github.com/input-output-hk/cardano-node.git             && \
+    cd cardano-node                                                                                     && \
+    cabal clean && cabal update                                                                         && \
+    cabal install --install-method=copy --installdir /opt/dist/cardano exe:cardano-node exe:cardano-cli
+
+# Results, the container with node executables.
+FROM base as target
+
+RUN mkdir -p /root/.local/bin/
+COPY --from=libsodium /opt/dist/libsodium /usr/
+COPY --from=node /opt/dist/cardano /root/.local/bin/
