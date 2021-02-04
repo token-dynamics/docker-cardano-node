@@ -12,6 +12,6 @@ variable "relay_instance_size" {
     type = string
 }
 
-variable "node_instance_size" {
+variable "core_instance_size" {
     type = string
 }

@@ -5,7 +5,7 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "cardano-pool-${terraform.workspace}"
+    Name = "${terraform.workspace}-cardano-pool"
   }
 }
 
@@ -13,12 +13,12 @@ resource "aws_subnet" "public" {
   count             = length(local.public_cidrs)
   vpc_id            = aws_vpc.main.id
   cidr_block        = local.public_cidrs[count.index]
-  availability_zone = var.zone[count.index]
+  availability_zone = local.zone[count.index]
 
   map_public_ip_on_launch = true
 
   tags  = {
-    Name = "cardano-pool-public-${terraform.workspace}-${var.zone[count.index]}"
+    Name = "${terraform.workspace}-cardano-pool-public-${local.zone[count.index]}"
     Type = "public"
   }
 }
@@ -27,10 +27,10 @@ resource "aws_subnet" "private" {
   count             = length(local.private_cidrs)
   vpc_id            = aws_vpc.main.id
   cidr_block        = local.private_cidrs[count.index]
-  availability_zone = var.zone[count.index]
+  availability_zone = local.zone[count.index]
 
   tags  = {
-    Name = "cardano-pool-private-${terraform.workspace}-${var.zone[count.index]}"
+    Name = "cardano-pool-private-${terraform.workspace}-${local.zone[count.index]}"
   }
 }
 
@@ -38,7 +38,7 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "cardano-pool-${terraform.workspace}"
+    Name = "${terraform.workspace}-cardano-pool"
   }
 }
 
@@ -54,7 +54,7 @@ resource "aws_nat_gateway" "nat" {
   subnet_id     = element(aws_subnet.public.*.id, count.index)
 
   tags = {
-    Name = "cardano-pool-${terraform.workspace}-${count.index}"
+    Name = "${terraform.workspace}-cardano-pool-${count.index}"
   }
 }
 
