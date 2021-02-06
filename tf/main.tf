@@ -13,6 +13,7 @@ module "relay" {
   relay_instance_size = var.relay_instance_size
   vpc_id              = module.vpc.vpc_id
   subnet_id           = module.vpc.public_subnets[0]
+  availability_zone   = module.vpc.zones[0]
 }
 
 module "core" {

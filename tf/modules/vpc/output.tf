@@ -17,3 +17,7 @@ output "private_subnets" {
 output "public_subnets" {
   value = aws_subnet.public.*.id
 }
+
+output "zones" {
+  value = local.zone
+}

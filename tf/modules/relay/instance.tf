@@ -1,3 +1,19 @@
+data "aws_ami" "ubuntu" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu-minimal/images/hvm-ssd/ubuntu-focal-20.04-amd64-minimal-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["099720109477"] # Canonical
+}
+
 resource "aws_security_group" "relay" {
   name    = "${terraform.workspace}-relay-security-group"
   vpc_id  = var.vpc_id
@@ -24,16 +40,41 @@ resource "aws_security_group" "relay" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
 }
 
 resource "aws_instance" "relay" {
-  ami             = "ami-07fbdcfe29326c4fb"
-  instance_type   = var.relay_instance_size
-  subnet_id       = var.subnet_id
-  security_groups = [ aws_security_group.relay.id ]
+  ami                     = data.aws_ami.ubuntu.id
+  instance_type           = var.relay_instance_size
+  subnet_id               = var.subnet_id
+  vpc_security_group_ids  = [ aws_security_group.relay.id ]
+
+  key_name = "awstd"
+
+  root_block_device {
+    volume_size = 30
+  }
+
+  connection {
+    host = self.public_ip
+    user = "ubuntu"
+    private_key = file("~/.ssh/awstd.pem")
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "echo OK"
+    ]
+  }
 
   tags = {
     Name = "${terraform.workspace}-cardano-pool-relay"
   }
+}
+
+resource "aws_eip" "relay" {
+}
+
+resource "aws_eip_association" "relay" {
+  instance_id = aws_instance.relay.id
+  allocation_id = aws_eip.relay.id
 }

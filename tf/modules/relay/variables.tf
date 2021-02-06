@@ -10,6 +10,10 @@ variable "subnet_id" {
   type = string
 }
 
+variable "availability_zone" {
+  type = string
+}
+
 variable "relay_node_port" {
   type = number
   default = "3001"

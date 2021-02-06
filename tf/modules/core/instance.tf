@@ -1,3 +1,19 @@
+data "aws_ami" "ubuntu" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu-minimal/images/hvm-ssd/ubuntu-focal-20.04-amd64-minimal-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["099720109477"] # Canonical
+}
+
 resource "aws_security_group" "core" {
   name    = "${terraform.workspace}-core-security-group"
   vpc_id  = var.vpc_id
@@ -28,10 +44,14 @@ resource "aws_security_group" "core" {
 }
 
 resource "aws_instance" "core" {
-  ami             = "ami-07fbdcfe29326c4fb"
-  instance_type   = var.core_instance_size
-  subnet_id       = var.subnet_id
-  security_groups = [ aws_security_group.core.id ]
+  ami                     = data.aws_ami.ubuntu.id
+  instance_type           = var.core_instance_size
+  subnet_id               = var.subnet_id
+  vpc_security_group_ids  = [ aws_security_group.core.id ]
+
+  root_block_device {
+    volume_size = 30
+  }
 
   tags = {
     Name = "${terraform.workspace}-cardano-pool-core"

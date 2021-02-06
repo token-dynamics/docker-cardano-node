@@ -5,7 +5,7 @@ variable "aws_profile" {
 
 variable "aws_region" {
     type = string
-    default = "ap-southeast-2"
+    default = "us-west-2"
 }
 
 variable "relay_instance_size" {
