@@ -2,9 +2,9 @@ terraform {
   required_version = "= 0.14.3"
 
   backend "s3" {
-    bucket  = "token-dynamics-tfstate"
+    bucket  = "token-dynamics-tf-state"
     key     = "tfstate"
-    region  = "ap-southeast-2"
+    region  = "us-west-2"
     profile = "token-dynamics"
     encrypt = true
     # dynamodb_table = "token-dynamics-tfstate"

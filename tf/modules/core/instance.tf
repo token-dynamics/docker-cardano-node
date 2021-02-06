@@ -49,6 +49,8 @@ resource "aws_instance" "core" {
   subnet_id               = var.subnet_id
   vpc_security_group_ids  = [ aws_security_group.core.id ]
 
+  key_name = var.key_pair_name
+
   root_block_device {
     volume_size = 30
   }

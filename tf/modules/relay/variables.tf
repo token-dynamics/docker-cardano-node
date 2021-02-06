@@ -18,3 +18,7 @@ variable "relay_node_port" {
   type = number
   default = "3001"
 }
+
+variable "key_pair_name" {
+  type = string
+}

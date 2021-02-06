@@ -48,22 +48,10 @@ resource "aws_instance" "relay" {
   subnet_id               = var.subnet_id
   vpc_security_group_ids  = [ aws_security_group.relay.id ]
 
-  key_name = "awstd"
+  key_name = var.key_pair_name
 
   root_block_device {
     volume_size = 30
-  }
-
-  connection {
-    host = self.public_ip
-    user = "ubuntu"
-    private_key = file("~/.ssh/awstd.pem")
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "echo OK"
-    ]
   }
 
   tags = {

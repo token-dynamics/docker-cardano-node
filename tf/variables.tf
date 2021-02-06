@@ -15,3 +15,13 @@ variable "relay_instance_size" {
 variable "core_instance_size" {
     type = string
 }
+
+variable "core_key_pair_name" {
+    type = string
+    default = "td-cardano-core"
+}
+
+variable "relay_key_pair_name" {
+    type = string
+    default = "td-cardano-relay"
+}
