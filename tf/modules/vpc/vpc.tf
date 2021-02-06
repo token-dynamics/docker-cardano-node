@@ -5,7 +5,8 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "${terraform.workspace}-cardano-pool"
+    Owner = "${terraform.workspace}--cardano-pool"
+    Name  = "${terraform.workspace}--cardano-pool"
   }
 }
 
@@ -18,8 +19,9 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags  = {
-    Name = "${terraform.workspace}-cardano-pool-public-${local.zone[count.index]}"
-    Type = "public"
+    Owner = "${terraform.workspace}--cardano-pool"
+    Name  = "${terraform.workspace}--cardano-pool--public-${local.zone[count.index]}"
+    Type  = "public"
   }
 }
 
@@ -30,7 +32,9 @@ resource "aws_subnet" "private" {
   availability_zone = local.zone[count.index]
 
   tags  = {
-    Name = "cardano-pool-private-${terraform.workspace}-${local.zone[count.index]}"
+    Owner = "${terraform.workspace}--cardano-pool"
+    Name  = "${terraform.workspace}--cardano-pool--${local.zone[count.index]}"
+    Type  = "private"
   }
 }
 
@@ -38,7 +42,8 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "${terraform.workspace}-cardano-pool"
+    Owner = "${terraform.workspace}--cardano-pool"
+    Name  = "${terraform.workspace}--cardano-pool"
   }
 }
 
@@ -47,7 +52,8 @@ resource "aws_eip" "nat" {
   vpc      = true
 
   tags = {
-    Name = "${terraform.workspace}-cardano-pool-nat-eip-${count.index}"
+    Owner = "${terraform.workspace}--cardano-pool"
+    Name  = "${terraform.workspace}--cardano-pool--${count.index}"
   }
 }
 
@@ -58,7 +64,8 @@ resource "aws_nat_gateway" "nat" {
   subnet_id     = element(aws_subnet.public.*.id, count.index)
 
   tags = {
-    Name = "${terraform.workspace}-cardano-pool-${count.index}"
+    Owner = "${terraform.workspace}--cardano-pool"
+    Name = "${terraform.workspace}--cardano-pool--${count.index}"
   }
 }
 
@@ -66,7 +73,8 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "${terraform.workspace}-cardano-pool-public"
+    Owner = "${terraform.workspace}--cardano-pool"
+    Name  = "${terraform.workspace}--cardano-pool--public"
   }
 }
 
@@ -88,7 +96,8 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "${terraform.workspace}-cardano-pool-private-${count.index}"
+    Owner = "${terraform.workspace}--cardano-pool"
+    Name  = "${terraform.workspace}--cardano-pool--private-${count.index}"
   }
 }
 

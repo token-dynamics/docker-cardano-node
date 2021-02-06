@@ -14,20 +14,20 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"] # Canonical
 }
 
-resource "aws_security_group" "relay" {
-  name    = "${terraform.workspace}-relay-security-group"
+resource "aws_security_group" "node" {
+  name    = "${terraform.workspace}--${var.name}"
   vpc_id  = var.vpc_id
 
   ingress {
-    description = "TLS from VPC"
-    from_port   = var.relay_node_port
-    to_port     = var.relay_node_port
+    description = "Node connection from VPC"
+    from_port   = var.node_port
+    to_port     = var.node_port
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-    description = "TLS from VPC"
+    description = "SSH from VPC"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -42,34 +42,30 @@ resource "aws_security_group" "relay" {
   }
 
   tags = {
-    Name = "${terraform.workspace}-cardano-pool-relay"
+    Owner = "${terraform.workspace}--cardano-pool" 
+    Name = "${terraform.workspace}--cardano-pool--${var.name}"
   }
 }
 
-resource "aws_instance" "relay" {
+resource "aws_instance" "node" {
   ami                     = data.aws_ami.ubuntu.id
-  instance_type           = var.relay_instance_size
+  instance_type           = var.instance_size
   subnet_id               = var.subnet_id
-  vpc_security_group_ids  = [ aws_security_group.relay.id ]
+  vpc_security_group_ids  = [ aws_security_group.node.id ]
+
+  user_data = templatefile(
+    "${path.module}/user_data/init-install.sh",
+    {}
+  )
 
   key_name = var.key_pair_name
 
   root_block_device {
-    volume_size = 30
+    volume_size = var.volume_size
   }
 
   tags = {
-    Name = "${terraform.workspace}-cardano-pool-relay"
+    Owner = "${terraform.workspace}--cardano-pool" 
+    Name = "${terraform.workspace}--cardano-pool--${var.name}"
   }
-}
-
-resource "aws_eip" "relay" {
-  tags = {
-    Name = "${terraform.workspace}-cardano-pool-relay"
-  }
-}
-
-resource "aws_eip_association" "relay" {
-  instance_id = aws_instance.relay.id
-  allocation_id = aws_eip.relay.id
 }

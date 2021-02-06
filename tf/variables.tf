@@ -25,3 +25,13 @@ variable "relay_key_pair_name" {
     type = string
     default = "td-cardano-relay"
 }
+
+variable "core_node_port" {
+    type = number
+    default = 3001
+}
+
+variable "relay_node_port" {
+    type = number
+    default = 3001
+}
