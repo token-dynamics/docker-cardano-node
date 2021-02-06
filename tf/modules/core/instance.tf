@@ -41,6 +41,10 @@ resource "aws_security_group" "core" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  tags = {
+    Name = "${terraform.workspace}-cardano-pool-core"
+  }
+
 }
 
 resource "aws_instance" "core" {

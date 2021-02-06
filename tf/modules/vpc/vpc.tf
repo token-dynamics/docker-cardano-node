@@ -45,6 +45,10 @@ resource "aws_internet_gateway" "main" {
 resource "aws_eip" "nat" {
   count    = length(local.private_cidrs)
   vpc      = true
+
+  tags = {
+    Name = "${terraform.workspace}-cardano-pool-nat-eip-${count.index}"
+  }
 }
 
 resource "aws_nat_gateway" "nat" {
@@ -60,6 +64,10 @@ resource "aws_nat_gateway" "nat" {
 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${terraform.workspace}-cardano-pool-public"
+  }
 }
 
 resource "aws_route" "public" {
@@ -78,6 +86,10 @@ resource "aws_route_table_association" "public" {
 resource "aws_route_table" "private" {
   count  = length(local.private_cidrs)
   vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${terraform.workspace}-cardano-pool-private-${count.index}"
+  }
 }
 
 resource "aws_route" "private" {

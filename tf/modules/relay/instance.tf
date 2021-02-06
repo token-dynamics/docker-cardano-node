@@ -40,6 +40,10 @@ resource "aws_security_group" "relay" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Name = "${terraform.workspace}-cardano-pool-relay"
+  }
 }
 
 resource "aws_instance" "relay" {
@@ -60,6 +64,9 @@ resource "aws_instance" "relay" {
 }
 
 resource "aws_eip" "relay" {
+  tags = {
+    Name = "${terraform.workspace}-cardano-pool-relay"
+  }
 }
 
 resource "aws_eip_association" "relay" {
