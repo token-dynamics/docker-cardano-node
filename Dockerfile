@@ -1,5 +1,6 @@
 # Just a representation of a base image. Let it be Ubuntu.
 FROM ubuntu:20.04 as base
+
 ENV DEBIAN_FRONTEND="noninteractive"
 ENV PATH="/root/.local/bin:${PATH}"
 ENV PATH="/root/.ghcup/bin:${PATH}"
@@ -36,10 +37,13 @@ RUN git clone https://github.com/input-output-hk/libsodium                      
 # Build cardano-node and cardano-cli here.
 FROM tools as node
 
+ENV CARDANO_VERSION="1.25.1"
+
 RUN mkdir -p /opt/dist/cardano
+
 COPY --from=libsodium /opt/dist/libsodium /usr/
 
-RUN git clone --depth 1 --branch 1.24.2 https://github.com/input-output-hk/cardano-node.git             && \
+RUN git clone --depth 1 --branch ${CARDANO_VERSION} https://github.com/input-output-hk/cardano-node.git && \
     cd cardano-node                                                                                     && \
     cabal clean && cabal update                                                                         && \
     cabal install --install-method=copy --installdir /opt/dist/cardano exe:cardano-node exe:cardano-cli
